@@ -8,9 +8,9 @@ use warnings;
 use experimental 'smartmatch';
 
 use File::Copy;
-#use Data::Dump 'dump';
+use Data::Dump 'dump';
 
-my @ipaddresses = ('');
+my @ipaddresses;
 
 my $targetfile="/etc/hosts";
 
@@ -18,11 +18,11 @@ my $ipentry="";
 
 my @domains;
 my $lesdomaines;
-my %hashEntries;
+my %hashIPv4Hosts;
 
 my $doyourjob=0;
 
-
+binmode(STDOUT, ":utf8");
 open(my $descripteur,'<:encoding(UTF-8)', $targetfile) or die "$targetfile not found :{";
 
 while(my $ligne = <$descripteur>) 			# tant que nous ne sommes pas arrivés à la fin du fichier
@@ -35,21 +35,23 @@ while(my $ligne = <$descripteur>) 			# tant que nous ne sommes pas arrivés à l
 		
 		if(!($ipentry ~~ @ipaddresses))
 		{
-			#print "IP trouvée --> $ipentry \n";
-			$hashEntries{$ipentry} = [ "@domains" ];											# contre intuitif... un "add" ou "+=" ou quelque chose qui pourrait noter qu'on ajoute à ce qui existe déjà...
-			push(@ipaddresses,$ipentry);
+			# si adresse IP pas trouvée 
+			$hashIPv4Hosts{$ipentry} = [ @domains ];											# on associe @domains avec l'adresse IP 
+			push(@ipaddresses,$ipentry);																	# on ajoute l'adresse IP dans le tableau ipaddresses
 		}
 		else
 		{
-			my @temp=$hashEntries{$ipentry};
-			push(@temp,[@domains]);
-			$hashEntries{$ipentry} = [@temp];															# contre intuitif... un "add" ou "+=" ou quelque chose qui pourrait noter qu'on ajoute à ce qui existe déjà...
+			my $recupHosts=$hashIPv4Hosts{$ipentry};
+			print "BEFORE recupHosts -> "."@$recupHosts"."\n";
+			push( @$recupHosts,"@domains");
+			print "AFTER recupHosts -> "."@$recupHosts"."\n";
+			$hashIPv4Hosts{$ipentry}=~[ @domains ];												# on remplace les hosts liés à l'adresse IP
 			$doyourjob=1;
 		}
 	}
 }
 
-#print dump(%hashEntries)."\n";
+print dump(%hashIPv4Hosts)."\n";
 close($descripteur);
 
 # ne faire ceci que si nous avons trouvé deux entrées IPv4 distinctes...
@@ -80,32 +82,12 @@ if($doyourjob)
 
 	close($descREAD);
 
-	foreach my $key (keys %hashEntries)
+	foreach my $ipaddress (@ipaddresses)
 	{
-		my @temp=$hashEntries{$key};
-		
-		foreach my $element (@temp)
-		{	
-			if($element ~~ /ARRAY/)
-			{
-				foreach my $autreelement (@$element)
-				{
-						$lesdomaines.="@$autreelement";
-						$lesdomaines.="\t";
-				}
-			}
-			else
-			{
-				$lesdomaines.="@$element";
-				$lesdomaines.="\t";
-			}
-		}
-		print $key."\t".$lesdomaines."\n";
-		$ipentry=$key."\t".$lesdomaines."\n";
-		
-		print $descWRITE $ipentry;
-		
-		$lesdomaines="";
+		my $hoststowrite=$hashIPv4Hosts{$ipaddress};
+		my $lineToWrite=$ipaddress."\t"."@$hoststowrite"."\n";
+		print $lineToWrite;
+		print $descWRITE $lineToWrite;
 	}
 
 	close($descWRITE);
