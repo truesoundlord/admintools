@@ -85,8 +85,9 @@ do
 	# il devrait y avoir moyen, en perl, à mon avis, de "ranger" les noms de domaines en fonction de leurs équivalent IP. 
 	
 	sed -i "s|/srv/www/vhosts/dummy-host.example.com|$apachedr/$servername|g" $vhostsdir/$servername.conf
-	sed -i "s/dummy-host.example.com/$servername/g" $vhostsdir/$servername.conf
 	sed -i "s/webmaster@dummy-host.example.com/$serveradmin/g" $vhostsdir/$servername.conf
+	sed -i "s/dummy-host.example.com/$servername/g" $vhostsdir/$servername.conf
+	
 	
 done
 
