@@ -8,7 +8,7 @@ use warnings;
 use experimental 'smartmatch';
 
 use File::Copy;
-use Data::Dump 'dump';
+#use Data::Dump 'dump';
 
 my @ipaddresses;
 
@@ -42,16 +42,16 @@ while(my $ligne = <$descripteur>) 			# tant que nous ne sommes pas arrivés à l
 		else
 		{
 			my $recupHosts=$hashIPv4Hosts{$ipentry};
-			print "BEFORE recupHosts -> "."@$recupHosts"."\n";
+			#print "BEFORE recupHosts -> "."@$recupHosts"."\n";
 			push( @$recupHosts,"@domains");
-			print "AFTER recupHosts -> "."@$recupHosts"."\n";
+			#print "AFTER recupHosts -> "."@$recupHosts"."\n";
 			$hashIPv4Hosts{$ipentry}=~[ @domains ];												# on remplace les hosts liés à l'adresse IP
 			$doyourjob=1;
 		}
 	}
 }
 
-print dump(%hashIPv4Hosts)."\n";
+#print dump(%hashIPv4Hosts)."\n";
 close($descripteur);
 
 # ne faire ceci que si nous avons trouvé deux entrées IPv4 distinctes...
